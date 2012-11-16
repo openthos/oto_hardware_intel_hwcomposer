@@ -32,8 +32,10 @@
 
 #include <EGL/egl.h>
 
+#define HWC_REMOVE_DEPRECATED_VERSIONS 1
+
 struct hwc_context_t {
-	hwc_composer_device_t device;
+	hwc_composer_device_1 device;
 	struct drm_module_t *gralloc_module;
 };
 
@@ -57,40 +59,40 @@ hwc_module_t HAL_MODULE_INFO_SYM = {
 };
 
 
-static int hwc_prepare(hwc_composer_device_t *dev, hwc_layer_list_t* list)
+static int hwc_prepare(hwc_composer_device_1 *dev, size_t numDisplays,
+	hwc_display_contents_1_t** displays)
 {
 	struct hwc_context_t* ctx = (struct hwc_context_t *) &dev->common;
 
 	// SurfaceFlinger wants to handle the complete composition
-	if (!list || list->numHwLayers == 0)
+	if (!displays[0]->hwLayers || displays[0]->numHwLayers == 0)
 		return 0;
 
-	int topmost = list->numHwLayers;
-	if (list->numHwLayers > 0)
+	int topmost = displays[0]->numHwLayers;
+	if (displays[0]->numHwLayers > 0)
 		topmost--;
 
-	if (list->flags & HWC_GEOMETRY_CHANGED) {
+	if (displays[0]->hwLayers->flags & HWC_GEOMETRY_CHANGED) {
 		for (int i=topmost; i>=0; i--) {
-			list->hwLayers[i].compositionType = HWC_FRAMEBUFFER;
+			displays[0]->hwLayers[i].compositionType = HWC_FRAMEBUFFER;
 		}
 	}
 	return 0;
 }
 
 
-static int hwc_set(hwc_composer_device_t *dev,
-		hwc_display_t dpy,
-		hwc_surface_t sur,
-		hwc_layer_list_t* list)
+static int hwc_set(hwc_composer_device_1 *dev,
+		size_t numDisplays, hwc_display_contents_1_t** displays)
 {
 	struct hwc_context_t* ctx = (struct hwc_context_t*)dev;
 	EGLBoolean success;
 
 	// display is turning off
-	if (!dpy && !sur && !list)
+	if (!displays[0]->dpy)
 		return 0;
 
-	success = eglSwapBuffers((EGLDisplay)dpy, (EGLSurface)sur);
+	success = eglSwapBuffers((EGLDisplay)displays[0]->dpy,
+		(EGLSurface)displays[0]->sur);
 
 	if (!success)
 		return HWC_EGL_ERROR;
