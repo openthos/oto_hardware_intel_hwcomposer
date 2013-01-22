@@ -100,6 +100,60 @@ static int hwc_set(hwc_composer_device_1 *dev,
 	return 0;
 }
 
+// toggle display on or off
+static int hwc_blank(struct hwc_composer_device_1* dev, int disp, int blank)
+{
+	// dummy implementation for now
+	return 0;
+}
+
+// query number of different configurations available on display
+static int hwc_get_display_cfgs(struct hwc_composer_device_1* dev, int disp,
+	uint32_t* configs, size_t* numConfigs)
+{
+	// support just one config per display for now
+	*configs = 1;
+	*numConfigs = 1;
+
+	return 0;
+}
+
+// query display attributes for a particular config
+static int hwc_get_display_attrs(struct hwc_composer_device_1* dev, int disp,
+	uint32_t config, const uint32_t* attributes, int32_t* values)
+{
+	int attr = 0;
+	struct hwc_context_t* ctx = (struct hwc_context_t *) &dev->common;
+
+	gralloc_drm_t *drm = ctx->gralloc_module->drm;
+
+	// support only 1 display for now
+	if (disp > 0)
+		return -EINVAL;
+
+	while(attributes[attr] != HWC_DISPLAY_NO_ATTRIBUTE) {
+		switch (attr) {
+			case HWC_DISPLAY_VSYNC_PERIOD:
+				values[attr] = drm->primary.mode.vrefresh;
+				break;
+			case HWC_DISPLAY_WIDTH:
+				values[attr] = drm->primary.mode.hdisplay;
+				break;
+			case HWC_DISPLAY_HEIGHT:
+				values[attr] = drm->primary.mode.vdisplay;
+				break;
+			case HWC_DISPLAY_DPI_X:
+				values[attr] = drm->primary.xdpi;
+				break;
+			case HWC_DISPLAY_DPI_Y:
+				values[attr] = drm->primary.ydpi;
+				break;
+		}
+		attr++;
+	}
+	return 0;
+}
+
 static int hwc_device_close(struct hw_device_t *dev)
 {
 	struct hwc_context_t* ctx = (struct hwc_context_t*)dev;
@@ -130,6 +184,9 @@ static int hwc_device_open(const struct hw_module_t* module, const char* name,
 
 	dev->device.prepare = hwc_prepare;
 	dev->device.set = hwc_set;
+	dev->device.blank = hwc_blank;
+	dev->device.getDisplayAttributes = hwc_get_display_attrs;
+	dev->device.getDisplayConfigs = hwc_get_display_cfgs;
 
 	*device = &dev->device.common;
 
