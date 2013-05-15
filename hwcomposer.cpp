@@ -32,7 +32,7 @@
 
 #include <EGL/egl.h>
 
-#define HWC_REMOVE_DEPRECATED_VERSIONS 1
+#define LOG_TAG "hwcomposer"
 
 #include <Condition.h>
 #include <Mutex.h>
@@ -57,6 +57,8 @@ hwc_module_t HAL_MODULE_INFO_SYM = {
 		name: "Intel hwcomposer module",
 		author: "Intel",
 		methods: &hwc_module_methods,
+		dso: NULL,
+		{0}
 	}
 };
 
@@ -251,10 +253,14 @@ static int hwc_device_open(const struct hw_module_t* module, const char* name,
 	dev->device.registerProcs = hwc_register_procs;
 	dev->device.eventControl = hwc_event_control;
 
-	*device = &dev->device.common;
-
 	int err = hw_get_module(GRALLOC_HARDWARE_MODULE_ID,
 		(const hw_module_t **)&dev->gralloc_module);
+	if (err != 0) {
+		ALOGE("hwc_device_open failed!\n");
+		return -errno;
+	}
+
+	*device = &dev->device.common;
 
 	dev->vsync_thread = new vsync_worker(*dev);
 
