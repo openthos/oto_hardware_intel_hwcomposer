@@ -16,11 +16,11 @@
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
-LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
 LOCAL_SHARED_LIBRARIES := liblog libEGL libhardware libutils libdrm
 LOCAL_CFLAGS := -DEGL_EGLEXT_PROTOTYPES
 LOCAL_C_INCLUDES := system/core/include/utils hardware/drm_gralloc external/drm external/drm/include/drm
 LOCAL_SRC_FILES := hwcomposer.cpp
 LOCAL_MODULE := hwcomposer.x86
 LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_RELATIVE_PATH := hw
 include $(BUILD_SHARED_LIBRARY)
