@@ -194,19 +194,19 @@ static int hwc_get_display_attrs(struct hwc_composer_device_1* dev, int disp,
 	while(attributes[attr] != HWC_DISPLAY_NO_ATTRIBUTE) {
 		switch (attr) {
 			case HWC_DISPLAY_VSYNC_PERIOD:
-				values[attr] = drm->primary.mode.vrefresh;
+				values[attr] = drm->primary->mode.vrefresh;
 				break;
 			case HWC_DISPLAY_WIDTH:
-				values[attr] = drm->primary.mode.hdisplay;
+				values[attr] = drm->primary->mode.hdisplay;
 				break;
 			case HWC_DISPLAY_HEIGHT:
-				values[attr] = drm->primary.mode.vdisplay;
+				values[attr] = drm->primary->mode.vdisplay;
 				break;
 			case HWC_DISPLAY_DPI_X:
-				values[attr] = drm->primary.xdpi;
+				values[attr] = drm->primary->xdpi;
 				break;
 			case HWC_DISPLAY_DPI_Y:
-				values[attr] = drm->primary.ydpi;
+				values[attr] = drm->primary->ydpi;
 				break;
 		}
 		attr++;
